@@ -14,7 +14,7 @@
 # Set your variables
 $rg = "rg-landing-zone-demo"
 $location = "eastus"
-$adminPass = "YourSecurePassword123!"
+$adminPass = "NewSecurePassword123!"
 
 # Deploy
 az deployment sub create `
@@ -43,7 +43,7 @@ az deployment sub validate `
   --parameters `
     resourceGroupName="rg-landing-zone-demo" `
     location="eastus" `
-    adminPassword="YourSecurePassword123!"
+    adminPassword="NewSecurePassword123!"
 ```
 
 ### 3. Create Deployment
@@ -53,7 +53,7 @@ az deployment sub create `
   --location eastus `
   --template-file infra/main.bicep `
   --parameters infra/main.parameters.json `
-  --parameters adminPassword="YourSecurePassword123!"
+  --parameters adminPassword="NewSecurePassword123!"
 ```
 
 ### 4. Monitor Progress
@@ -89,7 +89,7 @@ mstsc /v:$sqlVmIp
 
 # Credentials
 # Username: demoadmin
-# Password: YourSecurePassword123!
+# Password: NewSecurePassword123!
 ```
 
 ### Verify VPN Status

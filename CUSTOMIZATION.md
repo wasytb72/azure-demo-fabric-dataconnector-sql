@@ -116,7 +116,7 @@ az deployment sub create \
     "value": "sqlservices"
   },
   "adminPassword": {
-    "value": "MyNewPassword123!"
+    "value": "NewSecurePassword123!"
   }
 }
 ```
