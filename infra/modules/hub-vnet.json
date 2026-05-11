@@ -1,0 +1,351 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "4473082060071644356"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for resources"
+      }
+    },
+    "environment": {
+      "type": "string",
+      "metadata": {
+        "description": "Environment name"
+      }
+    }
+  },
+  "variables": {
+    "vnetName": "[format('vnet-hub-{0}', parameters('environment'))]",
+    "vnetAddressPrefix": "10.0.0.0/16",
+    "gatewaySubnetPrefix": "10.0.0.0/24",
+    "bastionSubnetPrefix": "10.0.1.0/24",
+    "firewallSubnetPrefix": "10.0.2.0/24",
+    "managementSubnetPrefix": "10.0.3.0/24",
+    "publicIpName": "[format('pip-vpngw-hub-{0}', parameters('environment'))]",
+    "vpnGatewayName": "[format('vpngw-hub-{0}', parameters('environment'))]",
+    "nsgName": "[format('nsg-hub-{0}', parameters('environment'))]",
+    "bastionName": "[format('bastion-hub-{0}', parameters('environment'))]",
+    "bastionPublicIpName": "[format('pip-bastion-hub-{0}', parameters('environment'))]",
+    "firewallName": "[format('afw-hub-{0}', parameters('environment'))]",
+    "firewallPublicIpName": "[format('pip-afw-hub-{0}', parameters('environment'))]",
+    "firewallPolicyName": "[format('policy-afw-hub-{0}', parameters('environment'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('nsgName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowRDP",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 100,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "AllowSSH",
+            "properties": {
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 101,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "AllowVnetInbound",
+            "properties": {
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "VirtualNetwork",
+              "destinationAddressPrefix": "VirtualNetwork",
+              "access": "Allow",
+              "priority": 102,
+              "direction": "Inbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('vnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetAddressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "GatewaySubnet",
+            "properties": {
+              "addressPrefix": "[variables('gatewaySubnetPrefix')]"
+            }
+          },
+          {
+            "name": "AzureBastionSubnet",
+            "properties": {
+              "addressPrefix": "[variables('bastionSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "AzureFirewallSubnet",
+            "properties": {
+              "addressPrefix": "[variables('firewallSubnetPrefix')]"
+            }
+          },
+          {
+            "name": "snet-management",
+            "properties": {
+              "addressPrefix": "[variables('managementSubnetPrefix')]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('publicIpName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('vpnGatewayName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "vnetGatewayConfig",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+              },
+              "subnet": {
+                "id": "[format('{0}/subnets/GatewaySubnet', resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
+              }
+            }
+          }
+        ],
+        "gatewayType": "Vpn",
+        "vpnType": "RouteBased",
+        "vpnGatewayGeneration": "Generation2",
+        "activeActive": false,
+        "enableBgp": false,
+        "sku": {
+          "name": "VpnGw2",
+          "tier": "VpnGw2"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('bastionPublicIpName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4
+      }
+    },
+    {
+      "type": "Microsoft.Network/bastionHosts",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('bastionName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]"
+              },
+              "subnet": {
+                "id": "[format('{0}/subnets/AzureBastionSubnet', resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('firewallPublicIpName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard",
+        "tier": "Regional"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4
+      }
+    },
+    {
+      "type": "Microsoft.Network/firewallPolicies",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('firewallPolicyName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "tier": "Standard"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/azureFirewalls",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('firewallName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "sku": {
+          "name": "AZFW_VNet",
+          "tier": "Standard"
+        },
+        "firewallPolicy": {
+          "id": "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicyName'))]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('firewallPublicIpName'))]"
+              },
+              "subnet": {
+                "id": "[format('{0}/subnets/AzureFirewallSubnet', resourceId('Microsoft.Network/virtualNetworks', variables('vnetName')))]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/firewallPolicies', variables('firewallPolicyName'))]",
+        "[resourceId('Microsoft.Network/publicIPAddresses', variables('firewallPublicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "vnetName": {
+      "type": "string",
+      "metadata": {
+        "description": "VNet Name"
+      },
+      "value": "[variables('vnetName')]"
+    },
+    "vnetId": {
+      "type": "string",
+      "metadata": {
+        "description": "VNet ID"
+      },
+      "value": "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetName'))]"
+    },
+    "vnetAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "VNet Address Prefix"
+      },
+      "value": "[variables('vnetAddressPrefix')]"
+    },
+    "vpnGatewayId": {
+      "type": "string",
+      "metadata": {
+        "description": "VPN Gateway ID"
+      },
+      "value": "[resourceId('Microsoft.Network/virtualNetworkGateways', variables('vpnGatewayName'))]"
+    },
+    "vpnGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "VPN Gateway Name"
+      },
+      "value": "[variables('vpnGatewayName')]"
+    },
+    "vpnGatewayPublicIp": {
+      "type": "string",
+      "metadata": {
+        "description": "VPN Gateway Public IP"
+      },
+      "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2023-11-01').ipAddress]"
+    },
+    "bastionId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Bastion ID"
+      },
+      "value": "[resourceId('Microsoft.Network/bastionHosts', variables('bastionName'))]"
+    },
+    "firewallId": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Firewall ID"
+      },
+      "value": "[resourceId('Microsoft.Network/azureFirewalls', variables('firewallName'))]"
+    },
+    "firewallPrivateIp": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure Firewall Private IP"
+      },
+      "value": "[reference(resourceId('Microsoft.Network/azureFirewalls', variables('firewallName')), '2023-11-01').ipConfigurations[0].properties.privateIPAddress]"
+    }
+  }
+}

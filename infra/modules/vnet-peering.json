@@ -1,0 +1,71 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "16059747222345311515"
+    }
+  },
+  "parameters": {
+    "hubVNetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub VNet name"
+      }
+    },
+    "spokeVNetName": {
+      "type": "string",
+      "metadata": {
+        "description": "Spoke VNet name"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-11-01",
+      "name": "[format('{0}/{1}', parameters('hubVNetName'), 'peer-hub-to-spoke')]",
+      "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": true,
+        "useRemoteGateways": false,
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('spokeVNetName'))]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
+      "apiVersion": "2023-11-01",
+      "name": "[format('{0}/{1}', parameters('spokeVNetName'), 'peer-spoke-to-hub')]",
+      "properties": {
+        "allowVirtualNetworkAccess": true,
+        "allowForwardedTraffic": true,
+        "allowGatewayTransit": false,
+        "useRemoteGateways": true,
+        "remoteVirtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', parameters('hubVNetName'))]"
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "hubToSpokePeeringId": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub to Spoke Peering ID"
+      },
+      "value": "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', parameters('hubVNetName'), 'peer-hub-to-spoke')]"
+    },
+    "spokeToHubPeeringId": {
+      "type": "string",
+      "metadata": {
+        "description": "Spoke to Hub Peering ID"
+      },
+      "value": "[resourceId('Microsoft.Network/virtualNetworks/virtualNetworkPeerings', parameters('spokeVNetName'), 'peer-spoke-to-hub')]"
+    }
+  }
+}

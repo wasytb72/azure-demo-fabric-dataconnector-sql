@@ -1,0 +1,159 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.42.1.51946",
+      "templateHash": "16927590454525198565"
+    }
+  },
+  "parameters": {
+    "hubVpnGatewayId": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub VPN Gateway ID"
+      }
+    },
+    "onPremVpnGatewayId": {
+      "type": "string",
+      "metadata": {
+        "description": "On-Prem VPN Gateway ID"
+      }
+    },
+    "onPremAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "On-Prem address prefix"
+      }
+    },
+    "hubAddressPrefix": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub address prefix"
+      }
+    },
+    "hubVpnGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub VPN Gateway name"
+      }
+    },
+    "onPremVpnGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "On-Prem VPN Gateway name"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Location for resources"
+      }
+    }
+  },
+  "variables": {
+    "sharedKey": "P@ssw0rdDemo123!",
+    "hubLocalGatewayName": "[format('lgw-{0}', parameters('onPremVpnGatewayName'))]",
+    "onPremLocalGatewayName": "[format('lgw-{0}', parameters('hubVpnGatewayName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/localNetworkGateways",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('hubLocalGatewayName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "localNetworkAddressSpace": {
+          "addressPrefixes": [
+            "[parameters('onPremAddressPrefix')]"
+          ]
+        },
+        "gatewayIpAddress": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'pip-vpngw-onprem-demo'), '2023-11-01').ipAddress]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/localNetworkGateways",
+      "apiVersion": "2023-11-01",
+      "name": "[variables('onPremLocalGatewayName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "localNetworkAddressSpace": {
+          "addressPrefixes": [
+            "[parameters('hubAddressPrefix')]"
+          ]
+        },
+        "gatewayIpAddress": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'pip-vpngw-hub-demo'), '2023-11-01').ipAddress]"
+      }
+    },
+    {
+      "type": "Microsoft.Network/connections",
+      "apiVersion": "2023-11-01",
+      "name": "conn-hub-to-onprem",
+      "location": "[parameters('location')]",
+      "properties": {
+        "connectionType": "IPsec",
+        "virtualNetworkGateway1": {
+          "id": "[parameters('hubVpnGatewayId')]"
+        },
+        "localNetworkGateway2": {
+          "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('hubLocalGatewayName'))]"
+        },
+        "sharedKey": "[variables('sharedKey')]",
+        "connectionProtocol": "IKEv2",
+        "enableBgp": false,
+        "usePolicyBasedTrafficSelectors": false,
+        "ipsecPolicies": []
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/localNetworkGateways', variables('hubLocalGatewayName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/connections",
+      "apiVersion": "2023-11-01",
+      "name": "conn-onprem-to-hub",
+      "location": "[parameters('location')]",
+      "properties": {
+        "connectionType": "IPsec",
+        "virtualNetworkGateway1": {
+          "id": "[parameters('onPremVpnGatewayId')]"
+        },
+        "localNetworkGateway2": {
+          "id": "[resourceId('Microsoft.Network/localNetworkGateways', variables('onPremLocalGatewayName'))]"
+        },
+        "sharedKey": "[variables('sharedKey')]",
+        "connectionProtocol": "IKEv2",
+        "enableBgp": false,
+        "usePolicyBasedTrafficSelectors": false,
+        "ipsecPolicies": []
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/localNetworkGateways', variables('onPremLocalGatewayName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "hubToOnPremConnectionId": {
+      "type": "string",
+      "metadata": {
+        "description": "Hub to On-Prem Connection ID"
+      },
+      "value": "[resourceId('Microsoft.Network/connections', 'conn-hub-to-onprem')]"
+    },
+    "onPremToHubConnectionId": {
+      "type": "string",
+      "metadata": {
+        "description": "On-Prem to Hub Connection ID"
+      },
+      "value": "[resourceId('Microsoft.Network/connections', 'conn-onprem-to-hub')]"
+    },
+    "sharedKey": {
+      "type": "string",
+      "metadata": {
+        "description": "Shared VPN Key"
+      },
+      "value": "[variables('sharedKey')]"
+    }
+  }
+}

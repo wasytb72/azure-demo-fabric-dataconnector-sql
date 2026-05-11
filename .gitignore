@@ -1,0 +1,64 @@
+# Local development files
+.env
+.env.local
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+local.settings.json
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+bin/
+obj/
+*.dll
+*.exe
+*.o
+*.a
+
+# Deployment outputs
+.azure/
+outputs.json
+deployment-outputs.json
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+
+# Logs
+*.log
+logs/
+
+# Parameter files with secrets (if committed)
+!main.parameters.json
+parameters.*.json
+secrets.json
+
+# Node modules (if using any npm packages)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+
+# Azure CLI cache
+.azure/
+
+# Bicep cache
+bicep-cache/
