@@ -3,7 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceGroupName": {
-      "value": "rg-fabric-lzzone-demo"
+      "value": "rg-fabric-lz-demo"
     },
     "location": {
       "value": "swedencentral"

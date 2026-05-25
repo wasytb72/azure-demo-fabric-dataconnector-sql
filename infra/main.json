@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.43.1.21952",
-      "templateHash": "4223523987608239500"
+      "version": "0.43.8.12551",
+      "templateHash": "15101174460643112327"
     }
   },
   "parameters": {
@@ -61,16 +61,9 @@
     },
     "fabricCapacityName": {
       "type": "string",
-      "defaultValue": "[format('repfabcap{0}', parameters('environment'))]",
+      "defaultValue": "repfabcap",
       "metadata": {
         "description": "Name for the Azure Fabric Capacity to be created. Must be globally unique."
-      }
-    },
-    "workspaceName": {
-      "type": "string",
-      "defaultValue": "[format('repfabwks{0}', parameters('environment'))]",
-      "metadata": {
-        "description": "Name for the Azure Fabric Workspace to be created. Must be globally unique."
       }
     },
     "fabricCapacityAdmins": {
@@ -124,8 +117,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "935326286603696006"
+              "version": "0.43.8.12551",
+              "templateHash": "2148543583513921195"
             }
           },
           "parameters": {
@@ -503,8 +496,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "6443176071128825249"
+              "version": "0.43.8.12551",
+              "templateHash": "14946783666632023142"
             }
           },
           "parameters": {
@@ -771,8 +764,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "2748097252572336295"
+              "version": "0.43.8.12551",
+              "templateHash": "18191431522454611667"
             }
           },
           "parameters": {
@@ -1017,8 +1010,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "14004592540692228290"
+              "version": "0.43.8.12551",
+              "templateHash": "18389017536396864941"
             }
           },
           "parameters": {
@@ -1128,8 +1121,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "3799688021307372870"
+              "version": "0.43.8.12551",
+              "templateHash": "13730635142511173994"
             }
           },
           "parameters": {
@@ -1315,10 +1308,7 @@
             "value": "[parameters('adminPassword')]"
           },
           "vmSize": {
-            "value": "Standard_B2s"
-          },
-          "sqlServerVersion": {
-            "value": "[parameters('sqlServerVersion')]"
+            "value": "Standard_D2s_v5"
           }
         },
         "template": {
@@ -1327,8 +1317,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "6663252054339121389"
+              "version": "0.43.8.12551",
+              "templateHash": "7771891400199211157"
             }
           },
           "parameters": {
@@ -1367,13 +1357,6 @@
               "defaultValue": "Standard_B2s",
               "metadata": {
                 "description": "VM Size"
-              }
-            },
-            "sqlServerVersion": {
-              "type": "string",
-              "defaultValue": "2022-web",
-              "metadata": {
-                "description": "SQL Server version"
               }
             }
           },
@@ -1628,9 +1611,6 @@
           "fabricCapacityName": {
             "value": "[parameters('fabricCapacityName')]"
           },
-          "workspaceName": {
-            "value": "[parameters('workspaceName')]"
-          },
           "fabricCapacityAdmins": {
             "value": "[parameters('fabricCapacityAdmins')]"
           }
@@ -1641,8 +1621,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "10439319619366580410"
+              "version": "0.43.8.12551",
+              "templateHash": "144013204074278483"
             }
           },
           "parameters": {
@@ -1651,9 +1631,6 @@
               "defaultValue": "[resourceGroup().location]"
             },
             "fabricCapacityName": {
-              "type": "string"
-            },
-            "workspaceName": {
               "type": "string"
             },
             "fabricCapacityAdmins": {
@@ -1665,7 +1642,7 @@
             {
               "type": "Microsoft.Fabric/capacities",
               "apiVersion": "2023-11-01",
-              "name": "[parameters('fabricCapacityName')]",
+              "name": "[format('{0}{1}', parameters('fabricCapacityName'), uniqueString(resourceGroup().id))]",
               "location": "[parameters('location')]",
               "sku": {
                 "name": "F2",
@@ -1676,28 +1653,12 @@
                   "members": "[parameters('fabricCapacityAdmins')]"
                 }
               }
-            },
-            {
-              "type": "Microsoft.Fabric/workspaces",
-              "apiVersion": "2023-11-01",
-              "name": "[parameters('workspaceName')]",
-              "location": "[parameters('location')]",
-              "properties": {
-                "capacityObjectId": "[resourceId('Microsoft.Fabric/capacities', parameters('fabricCapacityName'))]"
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Fabric/capacities', parameters('fabricCapacityName'))]"
-              ]
             }
           ],
           "outputs": {
             "fabricCapacityId": {
               "type": "string",
-              "value": "[resourceId('Microsoft.Fabric/capacities', parameters('fabricCapacityName'))]"
-            },
-            "workspaceId": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.Fabric/workspaces', parameters('workspaceName'))]"
+              "value": "[resourceId('Microsoft.Fabric/capacities', format('{0}{1}', parameters('fabricCapacityName'), uniqueString(resourceGroup().id)))]"
             }
           }
         }
@@ -1730,8 +1691,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.43.1.21952",
-              "templateHash": "6527864419884275628"
+              "version": "0.43.8.12551",
+              "templateHash": "5292508257909122749"
             }
           },
           "parameters": {

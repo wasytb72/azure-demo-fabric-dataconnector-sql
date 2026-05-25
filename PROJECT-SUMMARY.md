@@ -4,6 +4,40 @@
 
 This project provides a complete, production-grade Infrastructure-as-Code (IaC) template for deploying an Azure hub-spoke network topology with site-to-site VPN connectivity and SQL Server.
 
+## Change Review (2026-05-23)
+
+Reviewed changed files:
+- README.md
+- infra/main.bicep
+- infra/main.json
+- infra/main.parameters.json
+- infra/modules/fabric.bicep
+- infra/modules/sql-vm.bicep
+- scripts/create-fabricMPE.ps1
+
+Findings (ordered by severity):
+
+1. High: SQL VM was wired to the on-prem subnet, not the spoke subnet.
+   - Status: Fixed.
+   - Change: subnet input now uses the spoke output in [infra/main.bicep](infra/main.bicep#L109).
+
+2. Medium: Fabric MPE script parameter was not used for the payload subresource.
+   - Status: Fixed.
+   - Change: default set to sql and payload now binds to the parameter in [scripts/create-fabricMPE.ps1](scripts/create-fabricMPE.ps1#L13) and [scripts/create-fabricMPE.ps1](scripts/create-fabricMPE.ps1#L36).
+
+3. Medium: README architecture diagram formatting was broken.
+   - Status: Fixed.
+   - Change: ON-PREM VNET diagram block restored in [README.md](README.md#L31).
+
+4. Medium: Parameter default resource group name appeared inconsistent with recent command usage.
+   - Status: Fixed.
+   - Change: default aligned to rg-fabric-lz-demo in [infra/main.parameters.json](infra/main.parameters.json#L6).
+
+Change notes:
+- Fabric module now deploys only capacity and no longer creates a Fabric workspace.
+- SQL VM size was increased from Standard_B2s to Standard_D2s_v5.
+- Fabric MPE script was refactored to use parameters, explicit token extraction, verbose payload logging, and improved error reporting.
+
 **Perfect for:**
 - Learning hub-spoke networking patterns
 - Demonstrating hybrid cloud connectivity

@@ -89,7 +89,7 @@ mstsc /v:$sqlVmIp
 
 # Credentials
 # Username: demoadmin
-# Password: NewSecurePassword123!
+# Password: ****************
 ```
 
 ### Verify VPN Status

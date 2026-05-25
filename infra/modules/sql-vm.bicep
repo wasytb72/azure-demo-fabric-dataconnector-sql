@@ -17,9 +17,6 @@ param adminPassword string
 @description('VM Size')
 param vmSize string = 'Standard_B2s'
 
-@description('SQL Server version')
-param sqlServerVersion string = '2022-web'
-
 var vmName = 'sqlserver-${environment}'
 var nicName = 'nic-sql-${environment}'
 var osDiskName = 'osdisk-sql-${environment}'

@@ -25,10 +25,7 @@ param sqlServerVersion string = '2022-web'
 param deploymentTimestamp string = utcNow('u')
 
 @description('Name for the Azure Fabric Capacity to be created. Must be globally unique.')
-param fabricCapacityName string = 'repfabcap${environment}'
-
-@description('Name for the Azure Fabric Workspace to be created. Must be globally unique.')
-param workspaceName string = 'repfabwks${environment}'
+param fabricCapacityName string = 'repfabcap'
 
 @description('Fabric Capacity Admins')
 param fabricCapacityAdmins array = []
@@ -100,10 +97,6 @@ module vpnConnections 'modules/vpn-connections.bicep' = {
     onPremVpnGatewayName: onPremNetwork.outputs.vpnGatewayName
     location: location
   }
-  dependsOn: [
-    hubNetwork
-    onPremNetwork
-  ]
 }
 
 // Deploy Windows VM with SQL Server in spoke
@@ -113,11 +106,10 @@ module sqlServerVm 'modules/sql-vm.bicep' = {
   params: {
     location: location
     environment: environment
-    subnetId: onPremNetwork.outputs.workloadSubnetId
+    subnetId: spokeNetwork.outputs.workloadSubnetId
     adminUsername: adminUsername
     adminPassword: adminPassword
-    vmSize: 'Standard_B2s'
-    sqlServerVersion: sqlServerVersion
+    vmSize: 'Standard_D2s_v5'
   }
 }
 
@@ -126,8 +118,7 @@ module fabric 'modules/fabric.bicep' = if (deployFabric) {
   name: 'fabricDeployment'
   params: {
     location: location
-    fabricCapacityName: fabricCapacityName
-    workspaceName: workspaceName
+    fabricCapacityName:   fabricCapacityName
     fabricCapacityAdmins: fabricCapacityAdmins
   }
 }

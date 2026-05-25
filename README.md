@@ -6,22 +6,22 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        Azure Cloud                               │
+│                        Azure Cloud                              │
 ├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
+│                                                                 │
 │  ┌──────────────────────────┐         ┌──────────────────────┐  │
 │  │   HUB VNET               │         │   SPOKE VNET         │  │
 │  │   10.0.0.0/16            │         │   10.1.0.0/16        │  │
 │  ├──────────────────────────┤         ├──────────────────────┤  │
 │  │ • GatewaySubnet          │         │ • snet-workload      │  │
-│  │ • AzureBastionSubnet     │<───────>│   (SQL Server VM)    │  │
+│  │ • AzureBastionSubnet     │<───────>│   (LB + PLS)         │  │
 │  │ • AzureFirewallSubnet    │ Peering │                      │  │
 │  │ • Management Subnet      │         │                      │  │
 │  │                          │         │                      │  │
-│  │ [VPN Gateway]            │         │  [SQL Server VM]     │  │
+│  │ [VPN Gateway]            │         │  [Load Balancer]     │  │
 │  └──────────────────────────┘         │  • IP: Dynamic       │  │
-│         ↑                               │  • Public IP         │  │
-│         │ S2S VPN Tunnel                └──────────────────────┘  │
+│         ↑                             │  [Private Link Svc]  │  │
+│         │ S2S VPN Tunnel              └──────────────────────┘  │
 │         │ (IKEv2)                                                 │
 │         ↓                                                         │
 │  ┌──────────────────────────┐                                    │
@@ -32,8 +32,11 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
 │  │ • snet-workload          │                                    │
 │  │                          │                                    │
 │  │ [VPN Gateway]            │                                    │
+│  │ [SQL Server VM]          │                                    │
+│  │ • IP: Dynamic            │                                    │
+│  │ • Public IP              │                                    │
 │  └──────────────────────────┘                                    │
-│                                                                   │
+│                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -47,7 +50,7 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
   - Management Subnet
 
 - **Spoke VNet** (10.1.0.0/16)
-  - Workload Subnet hosting the SQL Server VM
+  - Workload Subnet hosting the internal Load Balancer and Private Link Service
   - Connected to Hub via VNet Peering
 
 - **On-Premises Simulation VNet** (192.168.0.0/16)
@@ -61,9 +64,9 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
 - **Shared Key**: P@ssw0rdDemo123!
 
 ### Compute
-- **SQL Server VM** in Spoke VNet
+- **SQL Server VM** in On-Premises Simulation VNet
   - Windows Server 2022 with SQL Server 2022 Web Edition
-  - Size: Standard_B2s (2 vCPU, 4GB RAM)
+  - Size: Standard_D2s_v5
   - Premium SSD for OS and Data disks
   - Public IP address for RDP/SQL access
   - SQL Server Management Tools pre-installed
@@ -162,7 +165,7 @@ Test-NetConnection -ComputerName 192.168.1.1 -Port 1433
 
 1. **NSG Rules**: All subnets have configured Network Security Groups
    - RDP (3389) open for management
-   - SQL (1433) restricted to VNet traffic for spoke
+  - SQL (1433) restricted to VNet traffic for on-prem simulation subnet
    - Allow rules for virtual network traffic
 
 2. **SQL Server Access**
