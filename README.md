@@ -184,7 +184,7 @@ Test-NetConnection -ComputerName 192.168.1.1 -Port 1433
 ## Cost Optimization
 
 This demo uses:
-- **Standard B2s VM**: ~$0.05/hour
+- **Standard_D2s_v5 VM**: ~$0.05/hour
 - **VPN Gateways**: ~$0.32/hour each (minimum 2)
 - **VNet Peering**: Free
 - **Data Transfer**: Minimal for demo purposes

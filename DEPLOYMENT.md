@@ -117,7 +117,7 @@ az deployment sub delete `
 | Resource | Estimated Cost/Month |
 |----------|---------------------|
 | VPN Gateway (2x) | $190 |
-| Standard_B2s VM | $35 |
+| Standard_D2s_v5 VM | $35 |
 | Public IPs (3x) | $10 |
 | **Total** | **~$235** |
 

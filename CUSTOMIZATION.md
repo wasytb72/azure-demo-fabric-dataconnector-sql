@@ -59,14 +59,14 @@ var workloadSubnetPrefix = '172.16.1.0/24'
 **Edit** `infra/modules/sql-vm.bicep`:
 
 ```bicep
-# Current (B2s - 2 vCPU, 4 GB RAM)
+# Current (D2s_v5 - 2 vCPU, 8 GB RAM)
+param vmSize string = 'Standard_D2s_v5'
+
+# For lower-cost testing (B2s - 2 vCPU, 4 GB RAM)
 param vmSize string = 'Standard_B2s'
 
-# For larger workloads (D2s - 2 vCPU, 8 GB RAM)
-param vmSize string = 'Standard_D2s_v3'
-
-# For production SQL (D4s - 4 vCPU, 16 GB RAM)
-param vmSize string = 'Standard_D4s_v3'
+# For production SQL (D4s_v5 - 4 vCPU, 16 GB RAM)
+param vmSize string = 'Standard_D4s_v5'
 ```
 
 **Size Options:**
@@ -74,8 +74,8 @@ param vmSize string = 'Standard_D4s_v3'
 |-----|------|-----|-----------|
 | Standard_B1s | 1 | 1GB | $6 |
 | Standard_B2s | 2 | 4GB | $35 |
-| Standard_D2s_v3 | 2 | 8GB | $97 |
-| Standard_D4s_v3 | 4 | 16GB | $193 |
+| Standard_D2s_v5 | 2 | 8GB | $97 |
+| Standard_D4s_v5 | 4 | 16GB | $193 |
 
 ---
 

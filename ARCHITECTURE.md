@@ -365,7 +365,7 @@ D:\
 | Component | Quantity | Monthly Cost |
 |-----------|----------|--------------|
 | VPN Gateway (VpnGw2) | 2 | $95 each = $190 |
-| Standard_B2s VM | 1 | $35 |
+| Standard_D2s_v5 VM | 1 | $35 |
 | Premium SSD (128GB) | 2 | $15 each = $30 |
 | Public IPs | 3 | $5 each = $15 |
 | Data Transfer | Minimal | $0-5 |

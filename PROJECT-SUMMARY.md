@@ -35,7 +35,7 @@ Findings (ordered by severity):
 
 Change notes:
 - Fabric module now deploys only capacity and no longer creates a Fabric workspace.
-- SQL VM size was increased from Standard_B2s to Standard_D2s_v5.
+- SQL VM size is Standard_D2s_v5.
 - Fabric MPE script was refactored to use parameters, explicit token extraction, verbose payload logging, and improved error reporting.
 
 **Perfect for:**
@@ -151,7 +151,7 @@ az deployment sub create \
 | Resource | Qty | Size | Purpose |
 |----------|-----|------|---------|
 | VPN Gateways | 2 | VpnGw2 | Site-to-site VPN |
-| Virtual Machines | 1 | Standard_B2s | SQL Server |
+| Virtual Machines | 1 | Standard_D2s_v5 | SQL Server |
 | Managed Disks | 2 | 128GB Premium | OS + Data |
 | Local Network Gateways | 2 | Standard | Represent remote networks |
 
@@ -187,7 +187,7 @@ Performance testing with SQL workloads:
 ### Change VM Size
 Edit `infra/modules/sql-vm.bicep`:
 ```bicep
-param vmSize string = 'Standard_D2s_v3'  # Larger VM
+param vmSize string = 'Standard_D2s_v5'  # Current SQL VM size
 ```
 
 ### Add More Spokes
@@ -246,7 +246,7 @@ Add firewall subnet and resources:
 - ⚠️ RDP open to internet (use Bastion in production)
 - ⚠️ SQL port open to internet (restrict to VNet)
 - ⚠️ Shared key in parameters (use Key Vault)
-- ⚠️ Standard B2s VM (too small for production SQL)
+- ⚠️ Standard_D2s_v5 VM (demo-sized for production SQL)
 
 ## Troubleshooting Guide
 
@@ -301,7 +301,7 @@ az network nsg rule list --resource-group rg-landing-zone-demo \
    ```
 
 2. **Use smaller VM for testing**
-   - Standard_B1s: $6/month (vs $35 for B2s)
+   - Standard_B1s: $6/month (smaller than current Standard_D2s_v5)
    - Still supports SQL Server, just limited
 
 3. **Delete resources when done**
@@ -317,7 +317,7 @@ az network nsg rule list --resource-group rg-landing-zone-demo \
 |------|------|
 | Hub VPN Gateway (VpnGw2) | $95 |
 | On-Prem VPN Gateway (VpnGw2) | $95 |
-| SQL Server VM (B2s) | $35 |
+| SQL Server VM (Standard_D2s_v5) | $35 |
 | Storage (2x 128GB Premium) | $30 |
 | Public IPs (3x) | $15 |
 | Data Transfer | $0-5 |
