@@ -67,7 +67,18 @@ landing-zone-demo/
 ### Option 1: PowerShell (Recommended for Windows)
 ```powershell
 cd C:\path\to\landing-zone-demo
-.\deploy.ps1 -AdminPassword "YourSecurePassword123!"
+.\deploy.ps1 `
+  -ResourceGroupName "rg-landing-zone-demo" `
+  -Location "swedencentral" `
+  -AdminPassword "YourSecurePassword123!" `
+  -Environment "demo" `
+  -fabricCapacityAdmins @("username@domain.com") `
+  -DeployFabric `
+  -AutoApprove
+
+# Optional switches you can add when needed:
+# -SkipValidation
+# -WhatIf
 ```
 
 ### Option 2: Bash (Recommended for Linux/Mac)

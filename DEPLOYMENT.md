@@ -11,19 +11,19 @@
 ## One-Command Deployment
 
 ```powershell
-# Set your variables
-$rg = "rg-landing-zone-demo"
-$location = "eastus"
-$adminPass = "NewSecurePassword123!"
+cd C:\path\to\landing-zone-demo
+.\deploy.ps1 `
+  -ResourceGroupName "rg-landing-zone-demo" `
+  -Location "swedencentral" `
+  -AdminPassword "NewSecurePassword123!" `
+  -Environment "demo" `
+  -fabricCapacityAdmins @("username@domain.com") `
+  -DeployFabric `
+  -AutoApprove
 
-# Deploy
-az deployment sub create `
-  --location $location `
-  --template-file infra/main.bicep `
-  --parameters `
-    resourceGroupName=$rg `
-    location=$location `
-    adminPassword=$adminPass
+# Optional switches:
+# -SkipValidation
+# -WhatIf
 
 # Wait 25-30 minutes for VPN Gateways to provision
 ```

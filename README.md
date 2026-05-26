@@ -22,21 +22,21 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
 │  └──────────────────────────┘         │  • IP: Dynamic       │  │
 │         ↑                             │  [Private Link Svc]  │  │
 │         │ S2S VPN Tunnel              └──────────────────────┘  │
-│         │ (IKEv2)                                                 │
-│         ↓                                                         │
-│  ┌──────────────────────────┐                                    │
-│  │   ON-PREM VNET           │                                    │
-│  │   192.168.0.0/16         │                                    │
-│  ├──────────────────────────┤                                    │
-│  │ • GatewaySubnet          │                                    │
-│  │ • snet-workload          │                                    │
-│  │                          │                                    │
-│  │ [VPN Gateway]            │                                    │
-│  │ [SQL Server VM]          │                                    │
-│  │ • IP: Dynamic            │                                    │
-│  │ • Public IP              │                                    │
-│  └──────────────────────────┘                                    │
-│                                                                  │
+│         │ (IKEv2)                                               │
+│         ↓                                                       │
+│  ┌──────────────────────────┐                                   │
+│  │   ON-PREM VNET           │                                   │
+│  │   192.168.0.0/16         │                                   │
+│  ├──────────────────────────┤                                   │
+│  │ • GatewaySubnet          │                                   │
+│  │ • snet-workload          │                                   │
+│  │                          │                                   │
+│  │ [VPN Gateway]            │                                   │
+│  │ [SQL Server VM]          │                                   │
+│  │ • IP: Dynamic            │                                   │
+│  │ • Public IP              │                                   │
+│  └──────────────────────────┘                                   │
+│                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -84,24 +84,22 @@ This demo deployment creates a comprehensive hub-spoke network topology in Azure
 
 ## Deployment Instructions
 
-### Option 1: Using Azure CLI
+### Option 1: Using PowerShell Script
 
-1. **Set variables**
-```bash
-$resourceGroupName = "rg-landing-zone-demo"
-$location = "eastus"
-$adminPassword = "YourSecurePassword123!"
-```
+```powershell
+cd C:\path\to\landing-zone-demo
+.\deploy.ps1 `
+  -ResourceGroupName "rg-landing-zone-demo" `
+  -Location "swedencentral" `
+  -AdminPassword "YourSecurePassword123!" `
+  -Environment "demo" `
+  -fabricCapacityAdmins @("username@domain.com") `
+  -DeployFabric `
+  -AutoApprove
 
-2. **Deploy subscription-scope deployment**
-```bash
-az deployment sub create `
-  --location $location `
-  --template-file infra/main.bicep `
-  --parameters `
-    resourceGroupName=$resourceGroupName `
-    location=$location `
-    adminPassword=$adminPassword
+# Optional switches:
+# -SkipValidation
+# -WhatIf
 ```
 
 ### Option 2: Using Azure PowerShell
