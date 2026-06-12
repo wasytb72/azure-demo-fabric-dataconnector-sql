@@ -92,6 +92,7 @@ module vpnConnections 'modules/vpn-connections.bicep' = {
     hubVpnGatewayId: hubNetwork.outputs.vpnGatewayId
     onPremVpnGatewayId: onPremNetwork.outputs.vpnGatewayId
     onPremAddressPrefix: onPremNetwork.outputs.vnetAddressPrefix
+    spokeAddressPrefix: spokeNetwork.outputs.vnetAddressPrefix
     hubAddressPrefix: hubNetwork.outputs.vnetAddressPrefix
     hubVpnGatewayName: hubNetwork.outputs.vpnGatewayName
     onPremVpnGatewayName: onPremNetwork.outputs.vpnGatewayName

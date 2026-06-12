@@ -33,7 +33,7 @@ $headers = @{
 $body = @{
     name = "onprem-sql-endpoint"
     targetPrivateLinkResourceId = "/subscriptions/$subId/resourceGroups/$rg/providers/Microsoft.Network/privateLinkServices/$plsName"
-    targetSubResourceId = $targetSubresourceType
+    targetSubResourceId = "sql"
     targetFQDNs = @("sqlserver-demo.corp.contoso.com")
     requestMessage = "Private connection request from Fabric to on-premises SQL"
 } | ConvertTo-Json

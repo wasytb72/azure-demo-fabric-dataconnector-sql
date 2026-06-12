@@ -10,6 +10,9 @@ param onPremAddressPrefix string
 @description('Hub address prefix')
 param hubAddressPrefix string
 
+@description('Spoke address prefix')
+param spokeAddressPrefix string
+
 @description('Hub VPN Gateway name')
 param hubVpnGatewayName string
 
@@ -50,6 +53,7 @@ resource hubLocalGateway 'Microsoft.Network/localNetworkGateways@2023-11-01' = {
     localNetworkAddressSpace: {
       addressPrefixes: [
         onPremAddressPrefix
+        spokeAddressPrefix
       ]
     }
     gatewayIpAddress: onPremGatewayPublicIp.properties.ipAddress
