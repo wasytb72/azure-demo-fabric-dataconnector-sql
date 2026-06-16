@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.43.8.12551",
-      "templateHash": "15101174460643112327"
+      "templateHash": "2058861834568614376"
     }
   },
   "parameters": {
@@ -1102,6 +1102,9 @@
           "onPremAddressPrefix": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'onPremNetworkDeployment'), '2025-04-01').outputs.vnetAddressPrefix.value]"
           },
+          "spokeAddressPrefix": {
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'spokeNetworkDeployment'), '2025-04-01').outputs.vnetAddressPrefix.value]"
+          },
           "hubAddressPrefix": {
             "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'hubNetworkDeployment'), '2025-04-01').outputs.vnetAddressPrefix.value]"
           },
@@ -1122,7 +1125,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.43.8.12551",
-              "templateHash": "13730635142511173994"
+              "templateHash": "7525860643931284395"
             }
           },
           "parameters": {
@@ -1148,6 +1151,12 @@
               "type": "string",
               "metadata": {
                 "description": "Hub address prefix"
+              }
+            },
+            "spokeAddressPrefix": {
+              "type": "string",
+              "metadata": {
+                "description": "Spoke address prefix"
               }
             },
             "hubVpnGatewayName": {
@@ -1183,7 +1192,8 @@
               "properties": {
                 "localNetworkAddressSpace": {
                   "addressPrefixes": [
-                    "[parameters('onPremAddressPrefix')]"
+                    "[parameters('onPremAddressPrefix')]",
+                    "[parameters('spokeAddressPrefix')]"
                   ]
                 },
                 "gatewayIpAddress": "[reference(resourceId('Microsoft.Network/publicIPAddresses', 'pip-vpngw-onprem-demo'), '2023-11-01').ipAddress]"
@@ -1278,7 +1288,8 @@
       "dependsOn": [
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'hubNetworkDeployment')]",
         "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'onPremNetworkDeployment')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('resourceGroupName'))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('resourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'spokeNetworkDeployment')]"
       ]
     },
     {
@@ -1299,7 +1310,7 @@
             "value": "[parameters('environment')]"
           },
           "subnetId": {
-            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'onPremNetworkDeployment'), '2025-04-01').outputs.workloadSubnetId.value]"
+            "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'spokeNetworkDeployment'), '2025-04-01').outputs.workloadSubnetId.value]"
           },
           "adminUsername": {
             "value": "[parameters('adminUsername')]"
@@ -1318,7 +1329,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.43.8.12551",
-              "templateHash": "7771891400199211157"
+              "templateHash": "13172464530315365792"
             }
           },
           "parameters": {
@@ -1365,7 +1376,6 @@
             "nicName": "[format('nic-sql-{0}', parameters('environment'))]",
             "osDiskName": "[format('osdisk-sql-{0}', parameters('environment'))]",
             "dataDiskName": "[format('datadisk-sql-{0}', parameters('environment'))]",
-            "publicIpName": "[format('pip-sql-{0}', parameters('environment'))]",
             "nsgName": "[format('nsg-sql-{0}', parameters('environment'))]"
           },
           "resources": [
@@ -1419,19 +1429,6 @@
               }
             },
             {
-              "type": "Microsoft.Network/publicIPAddresses",
-              "apiVersion": "2023-11-01",
-              "name": "[variables('publicIpName')]",
-              "location": "[parameters('location')]",
-              "sku": {
-                "name": "Standard",
-                "tier": "Regional"
-              },
-              "properties": {
-                "publicIPAllocationMethod": "Static"
-              }
-            },
-            {
               "type": "Microsoft.Network/networkInterfaces",
               "apiVersion": "2023-11-01",
               "name": "[variables('nicName')]",
@@ -1444,10 +1441,7 @@
                       "subnet": {
                         "id": "[parameters('subnetId')]"
                       },
-                      "privateIPAllocationMethod": "Dynamic",
-                      "publicIPAddress": {
-                        "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
-                      }
+                      "privateIPAllocationMethod": "Dynamic"
                     }
                   }
                 ],
@@ -1456,8 +1450,7 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', variables('nsgName'))]"
               ]
             },
             {
@@ -1564,33 +1557,19 @@
               },
               "value": "[variables('vmName')]"
             },
-            "publicIpAddress": {
-              "type": "string",
-              "metadata": {
-                "description": "Public IP Address"
-              },
-              "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2023-11-01').ipAddress]"
-            },
             "privateIpAddress": {
               "type": "string",
               "metadata": {
                 "description": "Private IP Address"
               },
               "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', variables('nicName')), '2023-11-01').ipConfigurations[0].properties.privateIPAddress]"
-            },
-            "sqlConnectionString": {
-              "type": "string",
-              "metadata": {
-                "description": "SQL Server Connection String"
-              },
-              "value": "[format('{0},1433', reference(resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), '2023-11-01').ipAddress)]"
             }
           }
         }
       },
       "dependsOn": [
-        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'onPremNetworkDeployment')]",
-        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('resourceGroupName'))]"
+        "[subscriptionResourceId('Microsoft.Resources/resourceGroups', parameters('resourceGroupName'))]",
+        "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'spokeNetworkDeployment')]"
       ]
     },
     {
@@ -1825,12 +1804,12 @@
       },
       "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'sqlServerVmDeployment'), '2025-04-01').outputs.vmId.value]"
     },
-    "sqlVmPublicIp": {
+    "sqlVmPrivateIp": {
       "type": "string",
       "metadata": {
-        "description": "SQL Server VM Public IP"
+        "description": "SQL Server VM Private IP"
       },
-      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'sqlServerVmDeployment'), '2025-04-01').outputs.publicIpAddress.value]"
+      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, parameters('resourceGroupName')), 'Microsoft.Resources/deployments', 'sqlServerVmDeployment'), '2025-04-01').outputs.privateIpAddress.value]"
     },
     "sqlVmName": {
       "type": "string",

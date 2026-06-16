@@ -21,7 +21,6 @@ var vmName = 'sqlserver-${environment}'
 var nicName = 'nic-sql-${environment}'
 var osDiskName = 'osdisk-sql-${environment}'
 var dataDiskName = 'datadisk-sql-${environment}'
-var publicIpName = 'pip-sql-${environment}'
 var nsgName = 'nsg-sql-${environment}'
 
 // Network Security Group for SQL VM
@@ -73,18 +72,6 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2023-11-01' = {
   }
 }
 
-// Public IP for SQL VM
-resource publicIp 'Microsoft.Network/publicIPAddresses@2023-11-01' = {
-  name: publicIpName
-  location: location
-  sku: {
-    name: 'Standard'
-    tier: 'Regional'
-  }
-  properties: {
-    publicIPAllocationMethod: 'Static'
-  }
-}
 
 // Network Interface
 resource nic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
@@ -99,9 +86,6 @@ resource nic 'Microsoft.Network/networkInterfaces@2023-11-01' = {
             id: subnetId
           }
           privateIPAllocationMethod: 'Dynamic'
-          publicIPAddress: {
-            id: publicIp.id
-          }
         }
       }
     ]
@@ -200,11 +184,5 @@ output vmId string = vm.id
 @description('VM Name')
 output vmName string = vm.name
 
-@description('Public IP Address')
-output publicIpAddress string = publicIp.properties.ipAddress
-
 @description('Private IP Address')
 output privateIpAddress string = nic.properties.ipConfigurations[0].properties.privateIPAddress
-
-@description('SQL Server Connection String')
-output sqlConnectionString string = '${publicIp.properties.ipAddress},1433'

@@ -155,8 +155,8 @@ output onPremVNetId string = onPremNetwork.outputs.vnetId
 @description('SQL Server VM ID')
 output sqlVmId string = sqlServerVm.outputs.vmId
 
-@description('SQL Server VM Public IP')
-output sqlVmPublicIp string = sqlServerVm.outputs.publicIpAddress
+@description('SQL Server VM Private IP')
+output sqlVmPrivateIp string = sqlServerVm.outputs.privateIpAddress
 
 @description('SQL Server VM Name')
 output sqlVmName string = sqlServerVm.outputs.vmName
